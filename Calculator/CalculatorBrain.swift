@@ -32,10 +32,19 @@ class CalculatorBrain {
     ]
     
     func clearHistoryOrNot(symbol: String) -> Bool {
-        if symbol == "=" {
-            return true
+        switch symbol {
+        case "=", "AC": return true
+        default: return false
         }
-        return false
+    }
+    
+    func cleanDisplayOrNot(symbol: String) -> Bool {
+        switch symbol {
+        case "AC":
+            return true
+        default:
+            return false
+        }
     }
     
     private var pending: PendingBinaryOperationInfo?

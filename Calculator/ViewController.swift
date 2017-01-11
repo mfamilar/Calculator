@@ -11,34 +11,37 @@ import UIKit
 class ViewController: UIViewController {
     
     @IBOutlet private weak var display: UILabel!
+    @IBOutlet private weak var history: UILabel!
     
-    @IBOutlet weak var history: UILabel!
+    private var userIsInTheMiddleOfTyping = false
+    private var clearHistory = true
+
+    private func handleHistory() {
+        if clearHistory {
+            history.text = " "
+            clearHistory = false
+        }
+    }
     
-    private var userIsIntTheMiddleOfTyping = false
-//        private var clearHistory = true
-    
+    private func addInHistoryField (toAdd: String) {
+        if let textCurrentlyInHistory = history.text {
+            history.text = textCurrentlyInHistory + toAdd
+        }
+    }
     
     @IBAction private func touchDigit(sender: UIButton) {
-//        if clearHistory {
-//            history.text = ""
-//            clearHistory = false
-//        }
+        handleHistory()
         if let digit = sender.currentTitle {
-            if userIsIntTheMiddleOfTyping {
+            if userIsInTheMiddleOfTyping {
                 if let textCurrentlyInDisplay = display.text {
                     display.text = textCurrentlyInDisplay + digit
                 }
-//                if let textCurrentlyInHistory = history.text {
-//                    history.text = textCurrentlyInHistory + digit
-//                }
-                
+                addInHistoryField(toAdd: digit)
             } else {
                 display.text = digit
-//                if let textCurrentlyInHistory = history.text {
-//                    history.text = textCurrentlyInHistory + digit
-//                }
+                addInHistoryField(toAdd: digit)
             }
-            userIsIntTheMiddleOfTyping = true
+            userIsInTheMiddleOfTyping = true
         }
     }
     
@@ -54,26 +57,24 @@ class ViewController: UIViewController {
     private var brain = CalculatorBrain()
     
     @IBAction private func performOperation(sender: UIButton) {
-        if userIsIntTheMiddleOfTyping {
+        handleHistory()
+        if userIsInTheMiddleOfTyping {
             brain.setOperand(operand: displayValue)
-            userIsIntTheMiddleOfTyping = false
+            userIsInTheMiddleOfTyping = false
         }
         if let mathematicalSymbol = sender.currentTitle {
-//            if let textCurrentlyInHistory = history.text {
-//                history.text = textCurrentlyInHistory + mathematicalSymbol
-//            }
-            if mathematicalSymbol == "AC" {
+            clearHistory = brain.clearHistoryOrNot(symbol: mathematicalSymbol)
+            addInHistoryField(toAdd: mathematicalSymbol)
+            if brain.cleanDisplayOrNot(symbol: mathematicalSymbol) {
                 display.text = "0"
+                handleHistory()
             }
             brain.performOperation(symbol: mathematicalSymbol)
-//            clearHistory = brain.clearHistoryOrNot(symbol: mathematicalSymbol)
         }
         displayValue = brain.result
-//        if clearHistory {
-//            if let textCurrentlyInHistory = history.text {
-//                history.text = textCurrentlyInHistory + String(displayValue)
-//            }
-//        }
+        if clearHistory {
+            addInHistoryField(toAdd: String(displayValue))
+        }
         
     }
 }

@@ -69,7 +69,7 @@
                                                         <rect key="frame" x="265" y="0.0" width="78" height="103.5"/>
                                                         <color key="backgroundColor" red="0.94389796257019043" green="0.64656060934066772" blue="0.11276593059301376" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                                        <state key="normal" title="−"/>
+                                                        <state key="normal" title="-"/>
                                                         <connections>
                                                             <action selector="performOperationWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vDO-qy-ubj"/>
                                                         </connections>
