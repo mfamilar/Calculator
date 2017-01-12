@@ -23,24 +23,26 @@ class CalculatorBrain {
         "±"     : Operation.UnaryOperation({ -$0 }),
         "√"     : Operation.UnaryOperation(sqrt),
         "cos"   : Operation.UnaryOperation(cos),
+        "sin"   : Operation.UnaryOperation(sin),
+        "tan"   : Operation.UnaryOperation(tan),
         "×"     : Operation.BinaryOperation({ $0 * $1 }),
         "+"     : Operation.BinaryOperation({ $0 + $1 }),
         "-"     : Operation.BinaryOperation({ $0 - $1 }),
         "÷"     : Operation.BinaryOperation({ $0 / $1 }),
         "="     : Operation.Equals,
-        "AC"    : Operation.Clear
+        "C"    : Operation.Clear
     ]
     
     func clearHistoryOrNot(symbol: String) -> Bool {
         switch symbol {
-        case "=", "AC": return true
+        case "=", "C": return true
         default: return false
         }
     }
     
     func cleanDisplayOrNot(symbol: String) -> Bool {
         switch symbol {
-        case "AC":
+        case "C":
             return true
         default:
             return false

@@ -14,6 +14,7 @@ class ViewController: UIViewController {
     @IBOutlet private weak var history: UILabel!
     
     private var userIsInTheMiddleOfTyping = false
+    private var floating = false
     private var clearHistory = true
 
     private func handleHistory() {
@@ -29,9 +30,19 @@ class ViewController: UIViewController {
         }
     }
     
+    private func handleFloating (digit: String) {
+        if digit == "." {
+            floating = true
+        }
+    }
+    
     @IBAction private func touchDigit(sender: UIButton) {
         handleHistory()
         if let digit = sender.currentTitle {
+            if floating && digit == "." {
+                return
+            }
+            handleFloating(digit: digit)
             if userIsInTheMiddleOfTyping {
                 if let textCurrentlyInDisplay = display.text {
                     display.text = textCurrentlyInDisplay + digit
@@ -40,8 +51,8 @@ class ViewController: UIViewController {
             } else {
                 display.text = digit
                 addInHistoryField(toAdd: digit)
+                userIsInTheMiddleOfTyping = true
             }
-            userIsInTheMiddleOfTyping = true
         }
     }
     
@@ -57,6 +68,7 @@ class ViewController: UIViewController {
     private var brain = CalculatorBrain()
     
     @IBAction private func performOperation(sender: UIButton) {
+        floating = false
         handleHistory()
         if userIsInTheMiddleOfTyping {
             brain.setOperand(operand: displayValue)
