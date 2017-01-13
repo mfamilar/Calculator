@@ -12,6 +12,9 @@ import Foundation
 class CalculatorBrain {
     
     private var accumulator = 0.0
+    private var description = ""
+    private var specialChar = false
+    private var reset = false
     
     func setOperand(operand: Double) {
         accumulator = operand
@@ -30,23 +33,26 @@ class CalculatorBrain {
         "-"     : Operation.BinaryOperation({ $0 - $1 }),
         "÷"     : Operation.BinaryOperation({ $0 / $1 }),
         "="     : Operation.Equals,
-        "C"    : Operation.Clear
+        "C"     : Operation.Clear
     ]
     
-    func clearHistoryOrNot(symbol: String) -> Bool {
-        switch symbol {
-        case "=", "C": return true
-        default: return false
+    var isPartialResult: Bool {
+        if pending != nil {
+            return true
         }
+        return false
     }
     
-    func cleanDisplayOrNot(symbol: String) -> Bool {
-        switch symbol {
-        case "C":
-            return true
-        default:
-            return false
+    func cleanDisplay(symbol: String) -> Bool {
+        if let constant = operations[symbol] {
+            switch constant {
+            case .Clear:
+                return true
+            default:
+                break
+            }
         }
+        return false
     }
     
     private var pending: PendingBinaryOperationInfo?
@@ -76,8 +82,49 @@ class CalculatorBrain {
         return 0.0
     }
     
+    private func handleSpecialChar (constant: CalculatorBrain.Operation) {
+        switch constant {
+        case .UnaryOperation, .Constant:
+            specialChar = true
+        default:
+            specialChar = false
+        }
+    }
+    
+    private func performDescription(constant: CalculatorBrain.Operation, symbol: String) {
+        if reset && specialChar == true {
+            description = " "
+            reset = false
+        }
+        switch constant {
+        case .Constant:
+            description += symbol
+        case .UnaryOperation:
+            if isPartialResult == false {
+                description = symbol + "(" + description + ")"
+            } else {
+                description += symbol + "(" + String(accumulator) + ")"
+            }
+        case .BinaryOperation:
+            if specialChar == false {
+                description += String(accumulator) + symbol
+            } else {
+                description += symbol
+            }
+        case .Equals:
+            if specialChar == false {
+                description += String(accumulator)
+                reset = true
+            }
+        case .Clear:
+            description = " "
+        }
+        handleSpecialChar(constant: constant)
+    }
+    
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
+            performDescription(constant: constant, symbol: symbol)
             switch constant {
             case .Constant(let value):
                 accumulator = value
@@ -90,12 +137,19 @@ class CalculatorBrain {
                 executePendingBinaryOperation()
             case .Clear:
                 accumulator = clearAccumulator()
+                pending = nil
             }
         }
     }
     var result: Double {
         get {
             return accumulator
+        }
+    }
+    
+    var history: String {
+        get {
+            return description
         }
     }
 }

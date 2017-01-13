@@ -211,7 +211,7 @@
                                                                 <fontDescription key="fontDescription" type="system" pointSize="30"/>
                                                                 <state key="normal" title="±"/>
                                                                 <connections>
-                                                                    <action selector="touchDigitWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="q4o-mh-3nv"/>
+                                                                    <action selector="performOperationWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PLF-Ay-stP"/>
                                                                 </connections>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xgw-Bt-aIs">
