@@ -14,7 +14,7 @@ class CalculatorBrain {
     private var accumulator = 0.0
     private var description = ""
     private var specialChar = false
-    private var reset = false
+    var reset = false
     
     func setOperand(operand: Double) {
         accumulator = operand
@@ -92,7 +92,7 @@ class CalculatorBrain {
     }
     
     private func performDescription(constant: CalculatorBrain.Operation, symbol: String) {
-        if reset && specialChar == true {
+        if reset {
             description = " "
             reset = false
         }
@@ -114,7 +114,6 @@ class CalculatorBrain {
         case .Equals:
             if specialChar == false {
                 description += String(accumulator)
-                reset = true
             }
         case .Clear:
             description = " "

@@ -14,6 +14,7 @@ class ViewController: UIViewController {
     @IBOutlet private weak var history: UILabel!
     
     private var userIsInTheMiddleOfTypingANumber = false
+    private var equalSpotted = false
 
     @IBAction private func touchDigit(sender: UIButton) {
         if let digit = sender.currentTitle {
@@ -26,6 +27,10 @@ class ViewController: UIViewController {
             } else {
                 display.text = digit
                 userIsInTheMiddleOfTypingANumber = true
+                if equalSpotted {
+                    equalSpotted = false
+                    brain.reset = true
+                }
             }
         }
         
@@ -57,6 +62,7 @@ class ViewController: UIViewController {
             history.text! += "..."
         } else if history.text != " " {
             history.text! += "="
+            equalSpotted = true
         }
     }
 }
