@@ -14,6 +14,7 @@ class CalculatorBrain {
     private var accumulator = 0.0
     private var description = ""
     private var specialChar = false
+    private var lastCharIsEqual = false
     
     func setOperand(operand: Double) {
         accumulator = operand
@@ -73,19 +74,31 @@ class CalculatorBrain {
     private func clear() {
         accumulator = 0.0
         pending = nil
+        description = " "
     }
     
     private func performDescription(constant: CalculatorBrain.Operation) {
         switch constant {
         case .UnaryOperation, .Constant:
             specialChar = true
+        case .BinaryOperation, .Equals:
+            break
         default:
             specialChar = false
         }
     }
     
+    private func handleLastCharIsEqual(constant: CalculatorBrain.Operation) {
+        switch constant {
+        case .Equals:
+            lastCharIsEqual = true
+        default:
+            lastCharIsEqual = false
+        }
+    }
+    
     private func unaryDescscription(symbol: String) {
-        if isPartialResult == false {
+        if isPartialResult == false  && description != " " {
             description = symbol + "(" + description + ")"
         } else {
             description += symbol + "(" + String(accumulator) + ")"
@@ -93,17 +106,22 @@ class CalculatorBrain {
     }
     
     private func binaryDescription(symbol: String) {
-        if specialChar == false {
+        if lastCharIsEqual == true && description != " " {
+            description += symbol
+        }
+        else if specialChar == false {
             description += String(accumulator) + symbol
         } else {
             description += symbol
         }
+        specialChar = false
     }
     
     private func equalDescription(symbol: String) {
         if specialChar == false {
             description += String(accumulator)
         }
+        specialChar = false
     }
 
     func performOperation(symbol: String) {
@@ -126,6 +144,7 @@ class CalculatorBrain {
             case .Clear:
                 clear()
             }
+            handleLastCharIsEqual(constant: constant)
         }
     }
     var result: Double {
