@@ -13,11 +13,11 @@ class CalculatorBrain {
     
     private var accumulator = 0.0
     private var description = ""
-    private var specialChar = false
-    private var lastCharIsEqual = false
+    private var keepOn = false
     
     func setOperand(operand: Double) {
         accumulator = operand
+        keepOn = false
         if isPartialResult == false {
             description = " "
         }
@@ -39,7 +39,7 @@ class CalculatorBrain {
         "C"     : Operation.Clear
     ]
     
-    var isPartialResult: Bool {
+    private var isPartialResult: Bool {
         get {
             if pending != nil {
                 return true
@@ -68,7 +68,6 @@ class CalculatorBrain {
             accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
             pending = nil
         }
-        
     }
     
     private func clear() {
@@ -77,28 +76,8 @@ class CalculatorBrain {
         description = " "
     }
     
-    private func performDescription(constant: CalculatorBrain.Operation) {
-        switch constant {
-        case .UnaryOperation, .Constant:
-            specialChar = true
-        case .BinaryOperation, .Equals:
-            break
-        default:
-            specialChar = false
-        }
-    }
-    
-    private func handleLastCharIsEqual(constant: CalculatorBrain.Operation) {
-        switch constant {
-        case .Equals:
-            lastCharIsEqual = true
-        default:
-            lastCharIsEqual = false
-        }
-    }
-    
     private func unaryDescscription(symbol: String) {
-        if isPartialResult == false  && description != " " {
+        if keepOn == true  && description != " " {
             description = symbol + "(" + description + ")"
         } else {
             description += symbol + "(" + String(accumulator) + ")"
@@ -106,31 +85,38 @@ class CalculatorBrain {
     }
     
     private func binaryDescription(symbol: String) {
-        if lastCharIsEqual == true && description != " " {
-            description += symbol
-        }
-        else if specialChar == false {
+        if keepOn == false {
             description += String(accumulator) + symbol
         } else {
-            description += symbol
+              description += symbol
         }
-        specialChar = false
     }
     
     private func equalDescription(symbol: String) {
-        if specialChar == false {
+        if keepOn == false {
+            description += String(accumulator)
+        } else if keepOn == true && checkLastCharIsABinary() {
             description += String(accumulator)
         }
-        specialChar = false
     }
 
+    private func checkLastCharIsABinary() -> Bool {
+        let lastChar = description[description.index(before: description.endIndex)]
+        if let ret: Operation = operations[String(lastChar)] {
+            if case .BinaryOperation = ret {
+                return true
+            }
+        }
+        return false
+    }
+
+    
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
-            performDescription(constant: constant)
             switch constant {
             case .Constant(let value):
-                accumulator = value
                 description += symbol
+                accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol)
                 accumulator = foo(accumulator)
@@ -144,7 +130,7 @@ class CalculatorBrain {
             case .Clear:
                 clear()
             }
-            handleLastCharIsEqual(constant: constant)
+            keepOn = true
         }
     }
     var result: Double {
