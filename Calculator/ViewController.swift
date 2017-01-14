@@ -14,7 +14,6 @@ class ViewController: UIViewController {
     @IBOutlet private weak var history: UILabel!
     
     private var userIsInTheMiddleOfTypingANumber = false
-    private var equalSpotted = false
 
     @IBAction private func touchDigit(sender: UIButton) {
         if let digit = sender.currentTitle {
@@ -27,13 +26,8 @@ class ViewController: UIViewController {
             } else {
                 display.text = digit
                 userIsInTheMiddleOfTypingANumber = true
-                if equalSpotted {
-                    equalSpotted = false
-                    brain.reset = true
-                }
             }
         }
-        
     }
     
     private var displayValue : Double {
@@ -54,16 +48,9 @@ class ViewController: UIViewController {
         }
         if let mathematicalSymbol = sender.currentTitle {
             brain.performOperation(symbol: mathematicalSymbol)
-            
         }
         displayValue = brain.result
         history.text! = brain.history
-        if brain.isPartialResult {
-            history.text! += "..."
-        } else if history.text != " " {
-            history.text! += "="
-            equalSpotted = true
-        }
     }
 }
 

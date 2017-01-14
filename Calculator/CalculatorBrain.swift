@@ -14,10 +14,12 @@ class CalculatorBrain {
     private var accumulator = 0.0
     private var description = ""
     private var specialChar = false
-    var reset = false
     
     func setOperand(operand: Double) {
         accumulator = operand
+        if isPartialResult == false {
+            description = " "
+        }
     }
     
     private var operations: Dictionary<String, Operation> = [
@@ -37,22 +39,12 @@ class CalculatorBrain {
     ]
     
     var isPartialResult: Bool {
-        if pending != nil {
-            return true
-        }
-        return false
-    }
-    
-    func cleanDisplay(symbol: String) -> Bool {
-        if let constant = operations[symbol] {
-            switch constant {
-            case .Clear:
+        get {
+            if pending != nil {
                 return true
-            default:
-                break
             }
+            return false
         }
-        return false
     }
     
     private var pending: PendingBinaryOperationInfo?
@@ -78,11 +70,12 @@ class CalculatorBrain {
         
     }
     
-    private func  clearAccumulator () -> Double {
-        return 0.0
+    private func clear() {
+        accumulator = 0.0
+        pending = nil
     }
     
-    private func handleSpecialChar (constant: CalculatorBrain.Operation) {
+    private func performDescription(constant: CalculatorBrain.Operation) {
         switch constant {
         case .UnaryOperation, .Constant:
             specialChar = true
@@ -91,52 +84,47 @@ class CalculatorBrain {
         }
     }
     
-    private func performDescription(constant: CalculatorBrain.Operation, symbol: String) {
-        if reset {
-            description = " "
-            reset = false
+    private func unaryDescscription(symbol: String) {
+        if isPartialResult == false {
+            description = symbol + "(" + description + ")"
+        } else {
+            description += symbol + "(" + String(accumulator) + ")"
         }
-        switch constant {
-        case .Constant:
-            description += symbol
-        case .UnaryOperation:
-            if isPartialResult == false {
-                description = symbol + "(" + description + ")"
-            } else {
-                description += symbol + "(" + String(accumulator) + ")"
-            }
-        case .BinaryOperation:
-            if specialChar == false {
-                description += String(accumulator) + symbol
-            } else {
-                description += symbol
-            }
-        case .Equals:
-            if specialChar == false {
-                description += String(accumulator)
-            }
-        case .Clear:
-            description = " "
-        }
-        handleSpecialChar(constant: constant)
     }
     
+    private func binaryDescription(symbol: String) {
+        if specialChar == false {
+            description += String(accumulator) + symbol
+        } else {
+            description += symbol
+        }
+    }
+    
+    private func equalDescription(symbol: String) {
+        if specialChar == false {
+            description += String(accumulator)
+        }
+    }
+
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
-            performDescription(constant: constant, symbol: symbol)
+            performDescription(constant: constant)
             switch constant {
             case .Constant(let value):
                 accumulator = value
+                description += symbol
             case .UnaryOperation(let foo):
+                unaryDescscription(symbol: symbol)
                 accumulator = foo(accumulator)
             case .BinaryOperation(let function):
+                binaryDescription(symbol: symbol)
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
+                equalDescription(symbol: symbol)
                 executePendingBinaryOperation()
             case .Clear:
-                accumulator = clearAccumulator()
-                pending = nil
+                clear()
             }
         }
     }
@@ -148,6 +136,11 @@ class CalculatorBrain {
     
     var history: String {
         get {
+            if isPartialResult {
+                return description + "..."
+            } else if description != " " {
+                return description + "="
+            }
             return description
         }
     }
