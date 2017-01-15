@@ -12,8 +12,8 @@ import Foundation
 class CalculatorBrain {
     
     private var accumulator = 0.0
-    private var description = ""
-    private var keepOn = false
+    private var description = " "
+    private var keepOn = true
     
     func setOperand(operand: Double) {
         accumulator = operand
@@ -77,10 +77,11 @@ class CalculatorBrain {
     }
     
     private func unaryDescscription(symbol: String) {
-        if keepOn == true  && description != " " {
-            description = symbol + "(" + description + ")"
-        } else {
+        if keepOn == false {
             description += symbol + "(" + String(accumulator) + ")"
+        }
+        else if keepOn == true  && description != " " {
+            description = symbol + "(" + description + ")"
         }
     }
     
@@ -88,7 +89,7 @@ class CalculatorBrain {
         if keepOn == false {
             description += String(accumulator) + symbol
         } else {
-              description += symbol
+            description += symbol
         }
     }
     
@@ -99,7 +100,7 @@ class CalculatorBrain {
             description += String(accumulator)
         }
     }
-
+    
     private func checkLastCharIsABinary() -> Bool {
         let lastChar = description[description.index(before: description.endIndex)]
         if let ret: Operation = operations[String(lastChar)] {
@@ -109,7 +110,7 @@ class CalculatorBrain {
         }
         return false
     }
-
+    
     
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
@@ -133,6 +134,7 @@ class CalculatorBrain {
             keepOn = true
         }
     }
+    
     var result: Double {
         get {
             return accumulator
