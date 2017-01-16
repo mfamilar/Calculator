@@ -78,6 +78,9 @@ class CalculatorBrain {
     
     private func unaryDescscription(symbol: String) {
         if keepOn == false {
+            if checkLastCharIsAConstant() {
+                description = description.substring(to: description.index(before: description.endIndex))
+            }
             description += symbol + "(" + String(accumulator) + ")"
         }
         else if keepOn == true  && description != " " {
@@ -87,17 +90,12 @@ class CalculatorBrain {
     
     private func binaryDescription(symbol: String) {
         if keepOn == false {
+            if checkLastCharIsAConstant() {
+                description = description.substring(to: description.index(before: description.endIndex))
+            }
             description += String(accumulator) + symbol
         } else {
             description += symbol
-        }
-    }
-    
-    private func equalDescription(symbol: String) {
-        if keepOn == false {
-            description += String(accumulator)
-        } else if keepOn == true && checkLastCharIsABinary() {
-            description += String(accumulator)
         }
     }
     
@@ -111,12 +109,36 @@ class CalculatorBrain {
         return false
     }
     
+    private func equalDescription(symbol: String) {
+        if keepOn == false {
+            description += String(accumulator)
+        } else if keepOn == true && checkLastCharIsABinary() {
+            description += String(accumulator)
+        }
+    }
+    
+    private func checkLastCharIsAConstant() -> Bool {
+        let lastChar = description[description.index(before: description.endIndex)]
+        if let ret: Operation = operations[String(lastChar)] {
+            if case .Constant = ret {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func constantDescription(symbol: String) {
+        if checkLastCharIsAConstant() {
+            description = description.substring(to: description.index(before: description.endIndex))
+        }
+        description += symbol
+    }
     
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
             switch constant {
             case .Constant(let value):
-                description += symbol
+                constantDescription(symbol: symbol)
                 accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol)
