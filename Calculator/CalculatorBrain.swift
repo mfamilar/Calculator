@@ -75,12 +75,8 @@ class CalculatorBrain {
         pending = nil
         description = " "
     }
-    
     private func unaryDescscription(symbol: String) {
         if keepOn == false {
-            if checkLastCharIsAConstant() {
-                description = description.substring(to: description.index(before: description.endIndex))
-            }
             description += symbol + "(" + String(accumulator) + ")"
         }
         else if keepOn == true  && description != " " {
@@ -90,12 +86,17 @@ class CalculatorBrain {
     
     private func binaryDescription(symbol: String) {
         if keepOn == false {
-            if checkLastCharIsAConstant() {
-                description = description.substring(to: description.index(before: description.endIndex))
-            }
             description += String(accumulator) + symbol
         } else {
             description += symbol
+        }
+    }
+    
+    private func equalDescription(symbol: String) {
+        if keepOn == false {
+            description += String(accumulator)
+        } else if keepOn == true && checkLastCharIsABinary() {
+            description += String(accumulator)
         }
     }
     
@@ -109,14 +110,6 @@ class CalculatorBrain {
         return false
     }
     
-    private func equalDescription(symbol: String) {
-        if keepOn == false {
-            description += String(accumulator)
-        } else if keepOn == true && checkLastCharIsABinary() {
-            description += String(accumulator)
-        }
-    }
-    
     private func checkLastCharIsAConstant() -> Bool {
         let lastChar = description[description.index(before: description.endIndex)]
         if let ret: Operation = operations[String(lastChar)] {
@@ -127,33 +120,50 @@ class CalculatorBrain {
         return false
     }
     
-    private func constantDescription(symbol: String) {
+    private func deleteLastCharIfConstant() {
         if checkLastCharIsAConstant() {
             description = description.substring(to: description.index(before: description.endIndex))
         }
-        description += symbol
+    }
+    
+    private func performDescription(symbol: String, constant: CalculatorBrain.Operation) {
+        switch constant {
+        case .Constant:
+            deleteLastCharIfConstant()
+            description += symbol
+        case .UnaryOperation, .BinaryOperation:
+            if keepOn == false {
+                deleteLastCharIfConstant()
+            }
+            if case .UnaryOperation = constant {
+                unaryDescscription(symbol: symbol)
+            } else {
+                binaryDescription(symbol: symbol)
+            }
+        case .Equals:
+            equalDescription(symbol: symbol)
+        default:
+            break
+        }
+        keepOn = true
     }
     
     func performOperation(symbol: String) {
         if let constant = operations[symbol] {
+            performDescription(symbol: symbol, constant: constant)
             switch constant {
             case .Constant(let value):
-                constantDescription(symbol: symbol)
                 accumulator = value
             case .UnaryOperation(let foo):
-                unaryDescscription(symbol: symbol)
                 accumulator = foo(accumulator)
             case .BinaryOperation(let function):
-                binaryDescription(symbol: symbol)
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
-                equalDescription(symbol: symbol)
                 executePendingBinaryOperation()
             case .Clear:
                 clear()
             }
-            keepOn = true
         }
     }
     
