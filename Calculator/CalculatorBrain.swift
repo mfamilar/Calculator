@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 class CalculatorBrain {
     
     private var accumulator = 0.0
@@ -36,7 +35,8 @@ class CalculatorBrain {
         "-"     : Operation.BinaryOperation({ $0 - $1 }),
         "÷"     : Operation.BinaryOperation({ $0 / $1 }),
         "="     : Operation.Equals,
-        "C"     : Operation.Clear
+        "C"     : Operation.Clear,
+        "Rand"  : Operation.Random
     ]
     
     private var isPartialResult: Bool {
@@ -61,6 +61,7 @@ class CalculatorBrain {
         case BinaryOperation((Double, Double) -> Double)
         case Equals
         case Clear
+        case Random
     }
     
     private func executePendingBinaryOperation() {
@@ -75,6 +76,13 @@ class CalculatorBrain {
         pending = nil
         description = " "
     }
+    
+    func random0to1() -> Double {
+        let arc4randomMax = Double(UInt32.max)
+        
+        return Double(arc4random()) / arc4randomMax
+    }
+
     private func unaryDescscription(symbol: String, strAccumulator: String) {
         if keepOn == false {
             description += symbol + "(" + strAccumulator + ")"
@@ -142,6 +150,8 @@ class CalculatorBrain {
             }
         case .Equals:
             equalDescription(strAccumulator: strAccumulator)
+        case .Random:
+            description += strAccumulator
         default:
             break
         }
@@ -163,6 +173,8 @@ class CalculatorBrain {
                 executePendingBinaryOperation()
             case .Clear:
                 clear()
+            case .Random:
+                accumulator = random0to1()
             }
         }
     }
