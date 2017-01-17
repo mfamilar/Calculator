@@ -12,11 +12,11 @@ class CalculatorBrain {
     
     private var accumulator = 0.0
     private var description = " "
-    private var keepOn = true
+    private var digitTouched = false
     
     func setOperand(operand: Double) {
         accumulator = operand
-        keepOn = false
+        digitTouched = true
         if isPartialResult == false {
             description = " "
         }
@@ -90,20 +90,20 @@ class CalculatorBrain {
     }
 
     private func unaryDescscription(symbol: String, strAccumulator: String) {
-        if keepOn == false {
-            if description != " " {
-                lastButtonTouched.size = Int(strlen(strAccumulator)) + Int(strlen(symbol)) + 2
-            }
+        if digitTouched == true {
+            deleteLastActionIfNecessary()
+            lastButtonTouched.size = Int(strlen(strAccumulator)) + Int(symbol.characters.count) + 2
             description += symbol + "(" + strAccumulator + ")"
+            return
         }
-        else if description != " " {
-            lastButtonTouched.size = 0
+        if description != " " {
             description = symbol + "(" + description + ")"
         }
+        lastButtonTouched.size = 0
     }
     
     private func binaryDescription(symbol: String, strAccumulator: String) {
-        if keepOn == false {
+        if digitTouched == true {
             deleteLastActionIfNecessary()
             description += strAccumulator + symbol
         } else {
@@ -112,7 +112,7 @@ class CalculatorBrain {
     }
     
     private func equalDescription(strAccumulator: String) {
-        if keepOn == false {
+        if digitTouched == true {
             deleteLastActionIfNecessary()
             description += strAccumulator
         } else if case .BinaryOperation = lastButtonTouched.type {
@@ -123,18 +123,34 @@ class CalculatorBrain {
     private func randomDescription(strAccumulator: String) {
         deleteLastActionIfNecessary()
         lastButtonTouched.size = Int(strlen(strAccumulator))
-        description += strAccumulator
+        if case .Equals = lastButtonTouched.type {
+            description = strAccumulator
+        } else {
+            description += strAccumulator
+        }
+    }
+    
+    private func constantDescription(symbol: String) {
+        deleteLastActionIfNecessary()
+        if case .Equals = lastButtonTouched.type {
+            description = symbol
+        } else {
+            description += symbol
+        }
     }
     
     private func deleteLastActionIfNecessary() {
-        if case .Random = lastButtonTouched.type {
-            let index = description.index(description.endIndex, offsetBy: (0 - lastButtonTouched.size))
-            description = description.substring(to: index)
-        } else if case .Constant = lastButtonTouched.type  {
-            description = description.substring(to: description.index(before: description.endIndex))
-        } else if case .UnaryOperation = lastButtonTouched.type {
-            let index = description.index(description.endIndex, offsetBy: (0 - lastButtonTouched.size))
-            description = description.substring(to: index)
+        if description != " " {
+            let constant = lastButtonTouched.type
+            switch constant {
+            case .Random, .UnaryOperation:
+                let index = description.index(description.endIndex, offsetBy: (0 - lastButtonTouched.size))
+                description = description.substring(to: index)
+            case .Constant:
+                description = description.substring(to: description.index(before: description.endIndex))
+            default:
+                break
+            }
         }
     }
     
@@ -143,8 +159,7 @@ class CalculatorBrain {
             let strAccumulator = percentFormatter(doubleToConvertInString: accumulator)
             switch constant {
             case .Constant(let value):
-                deleteLastActionIfNecessary()
-                description += symbol
+                constantDescription(symbol: symbol)
                 accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol, strAccumulator: strAccumulator)
@@ -162,7 +177,7 @@ class CalculatorBrain {
                 accumulator = random0to1()
                 randomDescription(strAccumulator: percentFormatter(doubleToConvertInString: accumulator))
             }
-            keepOn = true
+            digitTouched = false
             lastButtonTouched.type = constant
         }
     }
