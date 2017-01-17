@@ -70,38 +70,33 @@ class CalculatorBrain {
         }
     }
     
-    private func appendToDescription(operand: Double) {
-        
-    }
-    
     private func clear() {
         accumulator = 0.0
         pending = nil
         description = " "
     }
-    private func unaryDescscription(symbol: String) {
+    private func unaryDescscription(symbol: String, strAccumulator: String) {
         if keepOn == false {
-            description += symbol + "(" + String(accumulator) + ")"
+            description += symbol + "(" + strAccumulator + ")"
         }
         else if keepOn == true  && description != " " {
             description = symbol + "(" + description + ")"
         }
     }
     
-    private func binaryDescription(symbol: String) {
+    private func binaryDescription(symbol: String, strAccumulator: String) {
         if keepOn == false {
-            description += String(accumulator) + symbol
+            description += strAccumulator + symbol
         } else {
             description += symbol
         }
     }
     
-    private func equalDescription(symbol: String) {
+    private func equalDescription(strAccumulator: String) {
         if keepOn == false {
-            description += String(accumulator)
+            description += strAccumulator
         } else if keepOn == true && checkLastCharIsABinary() {
-            description += String(accumulator)
-        }
+            description += strAccumulator        }
     }
     
     private func checkLastCharIsABinary() -> Bool {
@@ -131,6 +126,7 @@ class CalculatorBrain {
     }
     
     private func performDescription(symbol: String, constant: CalculatorBrain.Operation) {
+        let strAccumulator = percentFormatter(doubleToConvertInString: accumulator)
         switch constant {
         case .Constant:
             deleteLastCharIfConstant()
@@ -140,12 +136,12 @@ class CalculatorBrain {
                 deleteLastCharIfConstant()
             }
             if case .UnaryOperation = constant {
-                unaryDescscription(symbol: symbol)
+                unaryDescscription(symbol: symbol, strAccumulator: strAccumulator)
             } else {
-                binaryDescription(symbol: symbol)
+                binaryDescription(symbol: symbol, strAccumulator: strAccumulator)
             }
         case .Equals:
-            equalDescription(symbol: symbol)
+            equalDescription(strAccumulator: strAccumulator)
         default:
             break
         }
@@ -171,15 +167,15 @@ class CalculatorBrain {
         }
     }
     
-     func percentFormatter(doubleToConvert: Double) -> String {
+     func percentFormatter(doubleToConvertInString: Double) -> String {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 6
         formatter.minimumFractionDigits = 0
         
-        if let ret = formatter.string(for: doubleToConvert) {
+        if let ret = formatter.string(for: doubleToConvertInString) {
             return ret
         }
-        return "ERROR"
+        return String(doubleToConvertInString)
     }
 
     
