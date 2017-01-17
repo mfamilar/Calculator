@@ -35,7 +35,7 @@ class ViewController: UIViewController {
             return Double(display.text!)!
         }
         set {
-            display.text = String(newValue)
+            display.text = brain.percentFormatter(doubleToConvert: newValue)
         }
     }
     

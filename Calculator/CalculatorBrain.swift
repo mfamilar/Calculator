@@ -70,6 +70,10 @@ class CalculatorBrain {
         }
     }
     
+    private func appendToDescription(operand: Double) {
+        
+    }
+    
     private func clear() {
         accumulator = 0.0
         pending = nil
@@ -166,6 +170,18 @@ class CalculatorBrain {
             }
         }
     }
+    
+     func percentFormatter(doubleToConvert: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 6
+        formatter.minimumFractionDigits = 0
+        
+        if let ret = formatter.string(for: doubleToConvert) {
+            return ret
+        }
+        return "ERROR"
+    }
+
     
     var result: Double {
         get {
