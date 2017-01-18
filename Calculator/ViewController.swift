@@ -30,6 +30,21 @@ class ViewController: UIViewController {
         }
     }
     
+    var savedProgram: CalculatorBrain.PropertyList?
+    
+    @IBAction func save() {
+        savedProgram = brain.program
+    }
+    
+    @IBAction func restore() {
+        if savedProgram != nil {
+            brain.program = savedProgram!
+            displayValue = brain.result
+            history.text! = brain.history
+        }
+    }
+    
+    
     @IBAction func backspace() {
         if var textCurrentlyInDisplay = display.text {
             if textCurrentlyInDisplay.characters.count > 1 {

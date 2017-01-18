@@ -13,9 +13,11 @@ class CalculatorBrain {
     private var accumulator = 0.0
     private var description = " "
     private var digitTouched = false
+    private var internalProgram = [AnyObject]()
     
     func setOperand(operand: Double) {
         accumulator = operand
+        internalProgram.append(operand as AnyObject)
         digitTouched = true
         if isPartialResult == false {
             description = " "
@@ -44,8 +46,28 @@ class CalculatorBrain {
         "÷"     : Operation.BinaryOperation({ $0 / $1 }),
         "="     : Operation.Equals,
         "C"     : Operation.Clear,
-        "Rand"  : Operation.Random
+        "rand"  : Operation.Random
     ]
+    
+    typealias PropertyList = AnyObject
+    
+    var program: PropertyList {
+        get {
+            return internalProgram as CalculatorBrain.PropertyList
+        }
+        set {
+            clear()
+            if let arrayOfOps = newValue as? [AnyObject] {
+                for op in arrayOfOps {
+                    if let operand = op as? Double {
+                        setOperand(operand: operand)
+                    } else if let operand = op as? String {
+                        performOperation(symbol: operand)
+                    }
+                }
+            }
+        }
+    }
     
     private var pending: PendingBinaryOperationInfo?
     
@@ -81,6 +103,7 @@ class CalculatorBrain {
         accumulator = 0.0
         pending = nil
         description = " "
+        internalProgram.removeAll()
     }
     
     func random0to1() -> Double {
@@ -155,6 +178,7 @@ class CalculatorBrain {
     }
     
     func performOperation(symbol: String) {
+        internalProgram.append(symbol as AnyObject)
         if let constant = operations[symbol] {
             let strAccumulator = percentFormatter(doubleToConvertInString: accumulator)
             switch constant {
