@@ -31,6 +31,7 @@ class CalculatorBrain {
         case Equals
         case Clear
         case Random
+        case M
     }
     
     private var operations: Dictionary<String, Operation> = [
@@ -46,7 +47,8 @@ class CalculatorBrain {
         "÷"     : Operation.BinaryOperation({ $0 / $1 }),
         "="     : Operation.Equals,
         "C"     : Operation.Clear,
-        "rand"  : Operation.Random
+        "rand"  : Operation.Random,
+        "→M"    : Operation.M
     ]
     
     typealias PropertyList = AnyObject
@@ -56,7 +58,7 @@ class CalculatorBrain {
             return internalProgram as CalculatorBrain.PropertyList
         }
         set {
-            clear()
+            clean()
             if let arrayOfOps = newValue as? [AnyObject] {
                 for op in arrayOfOps {
                     if let operand = op as? Double {
@@ -68,6 +70,18 @@ class CalculatorBrain {
             }
         }
     }
+    
+    lazy var variableValues = Dictionary<String, Double>()
+    
+    func setOperand(variableName: String) {
+        if let nb = variableValues[variableName] {
+            setOperand(operand: nb)
+        } else {
+            variableValues[variableName] = 0.0
+            setOperand(variableName: variableName)
+        }
+    }
+    
     
     private var pending: PendingBinaryOperationInfo?
     
@@ -99,11 +113,12 @@ class CalculatorBrain {
         }
     }
     
-    private func clear() {
+    private func clean() {
         accumulator = 0.0
         pending = nil
         description = " "
         internalProgram.removeAll()
+        variableValues.removeValue(forKey: "M")
     }
     
     func random0to1() -> Double {
@@ -162,6 +177,15 @@ class CalculatorBrain {
         }
     }
     
+    private func MDescription(symbol: String) {
+        deleteLastActionIfNecessary()
+        if case .Equals = lastButtonTouched.type {
+            description = "M"
+        } else {
+            description += "M"
+        }
+    }
+    
     private func deleteLastActionIfNecessary() {
         if description != " " {
             let constant = lastButtonTouched.type
@@ -169,7 +193,7 @@ class CalculatorBrain {
             case .Random, .UnaryOperation:
                 let index = description.index(description.endIndex, offsetBy: (0 - lastButtonTouched.size))
                 description = description.substring(to: index)
-            case .Constant:
+            case .Constant, .M:
                 description = description.substring(to: description.index(before: description.endIndex))
             default:
                 break
@@ -196,10 +220,17 @@ class CalculatorBrain {
                 equalDescription(strAccumulator: strAccumulator)
                 executePendingBinaryOperation()
             case .Clear:
-                clear()
+                clean()
             case .Random:
                 accumulator = random0to1()
                 randomDescription(strAccumulator: percentFormatter(doubleToConvertInString: accumulator))
+            case .M:
+                MDescription(symbol: symbol)
+                if let nb = variableValues["M"] {
+                    accumulator = nb
+                } else {
+                    accumulator = 0.0
+                }
             }
             digitTouched = false
             lastButtonTouched.type = constant

@@ -32,6 +32,18 @@ class ViewController: UIViewController {
     
     var savedProgram: CalculatorBrain.PropertyList?
     
+    @IBAction func setValue() {
+        brain.variableValues["M"] = displayValue
+    }
+    
+    
+    @IBAction func getValue() {
+        if let nb = brain.variableValues["M"] {
+                displayValue = nb
+        }
+//        brain.setOperand(variableName: "M")
+    }
+   
     @IBAction func save() {
         savedProgram = brain.program
     }
