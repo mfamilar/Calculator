@@ -30,20 +30,23 @@ class ViewController: UIViewController {
         }
     }
     
-    var savedProgram: CalculatorBrain.PropertyList?
-    
     @IBAction func setValue() {
-        brain.variableValues["M"] = displayValue
+        tmpProgram = brain.program
+        if let _ = Double(display.text!) {
+            brain.M = displayValue
+        }
+        brain.restoreVariables(oldList: tmpProgram!)
+        displayValue = brain.result
     }
-    
     
     @IBAction func getValue() {
-        if let nb = brain.variableValues["M"] {
-                displayValue = nb
-        }
-//        brain.setOperand(variableName: "M")
+        brain.setOperand(variableName: "M")
+        displayValue = brain.M
     }
    
+    var savedProgram: CalculatorBrain.PropertyList?
+    var tmpProgram: CalculatorBrain.PropertyList?
+    
     @IBAction func save() {
         savedProgram = brain.program
     }

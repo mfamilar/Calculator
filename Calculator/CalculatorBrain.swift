@@ -15,6 +15,26 @@ class CalculatorBrain {
     private var digitTouched = false
     private var internalProgram = [AnyObject]()
     
+    var M: Double {
+        get {
+            if let nb = variableValues["M"] {
+                return nb
+            } else {
+                return 0.0
+            }
+        }
+        set {
+            variableValues["M"] = newValue
+        }
+    }
+    
+    lazy var variableValues = Dictionary<String, Double>()
+    
+    func setOperand(variableName: String) {
+        setOperand(operand: M)
+        performOperation(symbol: variableName)
+    }
+    
     func setOperand(operand: Double) {
         accumulator = operand
         internalProgram.append(operand as AnyObject)
@@ -48,17 +68,33 @@ class CalculatorBrain {
         "="     : Operation.Equals,
         "C"     : Operation.Clear,
         "rand"  : Operation.Random,
-        "→M"    : Operation.M
+        "M"     : Operation.M
     ]
     
     typealias PropertyList = AnyObject
+    
+    func restoreVariables(oldList: PropertyList)  {
+        if let arrayOfOps = oldList as? [AnyObject] {
+            for op in arrayOfOps {
+                if let operand = op as? Double {
+                    setOperand(operand: operand)
+                } else if let operand = op as? String {
+                    if operand == "M" {
+                        setOperand(variableName: "M")
+                    } else {
+                        performOperation(symbol: operand)
+                    }
+                }
+            }
+        }
+    }
     
     var program: PropertyList {
         get {
             return internalProgram as CalculatorBrain.PropertyList
         }
         set {
-            clean()
+            clear()
             if let arrayOfOps = newValue as? [AnyObject] {
                 for op in arrayOfOps {
                     if let operand = op as? Double {
@@ -70,18 +106,6 @@ class CalculatorBrain {
             }
         }
     }
-    
-    lazy var variableValues = Dictionary<String, Double>()
-    
-    func setOperand(variableName: String) {
-        if let nb = variableValues[variableName] {
-            setOperand(operand: nb)
-        } else {
-            variableValues[variableName] = 0.0
-            setOperand(variableName: variableName)
-        }
-    }
-    
     
     private var pending: PendingBinaryOperationInfo?
     
@@ -113,7 +137,7 @@ class CalculatorBrain {
         }
     }
     
-    private func clean() {
+    private func clear() {
         accumulator = 0.0
         pending = nil
         description = " "
@@ -180,9 +204,9 @@ class CalculatorBrain {
     private func MDescription(symbol: String) {
         deleteLastActionIfNecessary()
         if case .Equals = lastButtonTouched.type {
-            description = "M"
+            description = symbol
         } else {
-            description += "M"
+            description += symbol
         }
     }
     
@@ -220,17 +244,12 @@ class CalculatorBrain {
                 equalDescription(strAccumulator: strAccumulator)
                 executePendingBinaryOperation()
             case .Clear:
-                clean()
+                clear()
             case .Random:
                 accumulator = random0to1()
                 randomDescription(strAccumulator: percentFormatter(doubleToConvertInString: accumulator))
             case .M:
                 MDescription(symbol: symbol)
-                if let nb = variableValues["M"] {
-                    accumulator = nb
-                } else {
-                    accumulator = 0.0
-                }
             }
             digitTouched = false
             lastButtonTouched.type = constant
