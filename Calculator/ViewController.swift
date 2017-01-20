@@ -30,28 +30,39 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func setValue() {
-        tmpProgram = brain.program
-        if let _ = Double(display.text!) {
-            brain.M = displayValue
+    private var tmpProgram: CalculatorBrain.PropertyList?
+    
+    @IBAction private func setValue(sender: UIButton) {
+        if var variable = sender.currentTitle {
+            variable.remove(at: variable.startIndex)
+            if variable != "" {
+                if let _ = Double(display.text!) {
+                    tmpProgram = brain.program
+                    brain.variableValues[variable] = displayValue
+                    brain.refreshPropertyList(oldList: tmpProgram!, variable: variable)
+                    displayValue = brain.result
+                }
+                
+            }
         }
-        brain.restoreVariables(oldList: tmpProgram!)
-        displayValue = brain.result
     }
     
-    @IBAction func getValue() {
-        brain.setOperand(variableName: "M")
-        displayValue = brain.M
+    @IBAction private func getValue(sender: UIButton) {
+        if let variable = sender.currentTitle {
+            brain.setOperand(variableName: variable)
+            if let nb = brain.variableValues[variable] { displayValue = nb }
+            else { displayValue = 0.0 }
+        }
     }
    
-    var savedProgram: CalculatorBrain.PropertyList?
-    var tmpProgram: CalculatorBrain.PropertyList?
     
-    @IBAction func save() {
+    private var savedProgram: CalculatorBrain.PropertyList?
+    
+    @IBAction private func save() {
         savedProgram = brain.program
     }
     
-    @IBAction func restore() {
+    @IBAction private func restore() {
         if savedProgram != nil {
             brain.program = savedProgram!
             displayValue = brain.result
@@ -60,7 +71,7 @@ class ViewController: UIViewController {
     }
     
     
-    @IBAction func backspace() {
+     @IBAction private func backspace() {
         if var textCurrentlyInDisplay = display.text {
             if textCurrentlyInDisplay.characters.count > 1 {
                 textCurrentlyInDisplay = textCurrentlyInDisplay.substring(to: textCurrentlyInDisplay.index(before: textCurrentlyInDisplay.endIndex))

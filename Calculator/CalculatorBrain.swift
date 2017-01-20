@@ -15,33 +15,19 @@ class CalculatorBrain {
     private var digitTouched = false
     private var internalProgram = [AnyObject]()
     
-    var M: Double {
-        get {
-            if let nb = variableValues["M"] {
-                return nb
-            } else {
-                return 0.0
-            }
-        }
-        set {
-            variableValues["M"] = newValue
-        }
+    func setOperand(operand: Double) {
+        accumulator = operand
+        internalProgram.append(operand as AnyObject)
+        digitTouched = true
+        if isPartialResult == false { description = " " }
     }
     
     lazy var variableValues = Dictionary<String, Double>()
     
     func setOperand(variableName: String) {
-        setOperand(operand: M)
+        if let nb = variableValues[variableName] { setOperand(operand: nb) }
+        else { setOperand(operand: 0.0) }
         performOperation(symbol: variableName)
-    }
-    
-    func setOperand(operand: Double) {
-        accumulator = operand
-        internalProgram.append(operand as AnyObject)
-        digitTouched = true
-        if isPartialResult == false {
-            description = " "
-        }
     }
     
     private enum Operation {
@@ -51,7 +37,7 @@ class CalculatorBrain {
         case Equals
         case Clear
         case Random
-        case M
+        case Variable
     }
     
     private var operations: Dictionary<String, Operation> = [
@@ -68,26 +54,10 @@ class CalculatorBrain {
         "="     : Operation.Equals,
         "C"     : Operation.Clear,
         "rand"  : Operation.Random,
-        "M"     : Operation.M
+        "M"     : Operation.Variable
     ]
     
     typealias PropertyList = AnyObject
-    
-    func restoreVariables(oldList: PropertyList)  {
-        if let arrayOfOps = oldList as? [AnyObject] {
-            for op in arrayOfOps {
-                if let operand = op as? Double {
-                    setOperand(operand: operand)
-                } else if let operand = op as? String {
-                    if operand == "M" {
-                        setOperand(variableName: "M")
-                    } else {
-                        performOperation(symbol: operand)
-                    }
-                }
-            }
-        }
-    }
     
     var program: PropertyList {
         get {
@@ -107,11 +77,30 @@ class CalculatorBrain {
         }
     }
     
+    func refreshPropertyList(oldList: PropertyList, variable: String)  {
+        if let arrayOfOps = oldList as? [AnyObject] {
+            for op in arrayOfOps {
+                if let operand = op as? Double { setOperand(operand: operand) }
+                else if let operand = op as? String {
+                    if operand == variable { setOperand(variableName: variable) }
+                    else { performOperation(symbol: operand) }
+                }
+            }
+        }
+    }
+
     private var pending: PendingBinaryOperationInfo?
     
     private struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
+    }
+    
+    private func executePendingBinaryOperation() {
+        if pending != nil {
+            accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
+            pending = nil
+        }
     }
     
     private var isPartialResult: Bool {
@@ -130,13 +119,6 @@ class CalculatorBrain {
         var size: Int
     }
     
-    private func executePendingBinaryOperation() {
-        if pending != nil {
-            accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
-            pending = nil
-        }
-    }
-    
     private func clear() {
         accumulator = 0.0
         pending = nil
@@ -147,7 +129,6 @@ class CalculatorBrain {
     
     func random0to1() -> Double {
         let intMax = Double(UInt32.max)
-        
         return Double(arc4random()) / intMax
     }
 
@@ -158,9 +139,7 @@ class CalculatorBrain {
             description += symbol + "(" + strAccumulator + ")"
             return
         }
-        if description != " " {
-            description = symbol + "(" + description + ")"
-        }
+        if description != " " { description = symbol + "(" + description + ")" }
         lastButtonTouched.size = 0
     }
     
@@ -168,46 +147,27 @@ class CalculatorBrain {
         if digitTouched == true {
             deleteLastActionIfNecessary()
             description += strAccumulator + symbol
-        } else {
-            description += symbol
-        }
+        } else { description += symbol }
     }
     
     private func equalDescription(strAccumulator: String) {
         if digitTouched == true {
             deleteLastActionIfNecessary()
             description += strAccumulator
-        } else if case .BinaryOperation = lastButtonTouched.type {
-            description += strAccumulator
-        }
+        } else if case .BinaryOperation = lastButtonTouched.type { description += strAccumulator }
     }
     
     private func randomDescription(strAccumulator: String) {
         deleteLastActionIfNecessary()
         lastButtonTouched.size = Int(strlen(strAccumulator))
-        if case .Equals = lastButtonTouched.type {
-            description = strAccumulator
-        } else {
-            description += strAccumulator
-        }
+        if case .Equals = lastButtonTouched.type { description = strAccumulator }
+        else { description += strAccumulator }
     }
     
-    private func constantDescription(symbol: String) {
+    private func constantOrVariableDescription(symbol: String) {
         deleteLastActionIfNecessary()
-        if case .Equals = lastButtonTouched.type {
-            description = symbol
-        } else {
-            description += symbol
-        }
-    }
-    
-    private func MDescription(symbol: String) {
-        deleteLastActionIfNecessary()
-        if case .Equals = lastButtonTouched.type {
-            description = symbol
-        } else {
-            description += symbol
-        }
+        if case .Equals = lastButtonTouched.type { description = symbol }
+        else { description += symbol }
     }
     
     private func deleteLastActionIfNecessary() {
@@ -217,7 +177,7 @@ class CalculatorBrain {
             case .Random, .UnaryOperation:
                 let index = description.index(description.endIndex, offsetBy: (0 - lastButtonTouched.size))
                 description = description.substring(to: index)
-            case .Constant, .M:
+            case .Constant, .Variable:
                 description = description.substring(to: description.index(before: description.endIndex))
             default:
                 break
@@ -231,7 +191,7 @@ class CalculatorBrain {
             let strAccumulator = percentFormatter(doubleToConvertInString: accumulator)
             switch constant {
             case .Constant(let value):
-                constantDescription(symbol: symbol)
+                constantOrVariableDescription(symbol: symbol)
                 accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol, strAccumulator: strAccumulator)
@@ -248,12 +208,15 @@ class CalculatorBrain {
             case .Random:
                 accumulator = random0to1()
                 randomDescription(strAccumulator: percentFormatter(doubleToConvertInString: accumulator))
-            case .M:
-                MDescription(symbol: symbol)
+            default:
+                constantOrVariableDescription(symbol: symbol)
             }
-            digitTouched = false
             lastButtonTouched.type = constant
+        } else {
+            constantOrVariableDescription(symbol: symbol)
+            lastButtonTouched.type = .Variable
         }
+        digitTouched = false
     }
     
      func percentFormatter(doubleToConvertInString: Double) -> String {

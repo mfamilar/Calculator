@@ -338,7 +338,7 @@
                                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                                         <state key="normal" title="M"/>
                                                         <connections>
-                                                            <action selector="getValue" destination="BYZ-38-t0r" eventType="touchUpInside" id="uSW-UW-guw"/>
+                                                            <action selector="getValueWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hDZ-qm-sqk"/>
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bHA-Yv-1XT">
@@ -347,7 +347,7 @@
                                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                                         <state key="normal" title="→M"/>
                                                         <connections>
-                                                            <action selector="setValue" destination="BYZ-38-t0r" eventType="touchUpInside" id="jLx-eI-YCO"/>
+                                                            <action selector="setValueWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="VRh-k4-u4v"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
