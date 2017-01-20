@@ -54,7 +54,7 @@ class CalculatorBrain {
         "="     : Operation.Equals,
         "C"     : Operation.Clear,
         "rand"  : Operation.Random,
-        "M"     : Operation.Variable
+        "M"     : Operation.Variable,
     ]
     
     typealias PropertyList = AnyObject
@@ -91,6 +91,25 @@ class CalculatorBrain {
         }
     }
 
+    private func softClear() {
+        pending = nil
+        description = " "
+        internalProgram.removeAll()
+    }
+    
+    func undo(oldList: PropertyList)  {
+        softClear()
+        if let arrayOfOps = oldList as? [AnyObject] {
+            var size = arrayOfOps.count
+            for op in arrayOfOps {
+                if size - 2 == 0 { return }
+                if let operand = op as? Double { setOperand(operand: operand) }
+                else if let operand = op as? String { performOperation(symbol: operand) }
+                size -= 1
+            }
+        }
+    }
+    
     private var pending: PendingBinaryOperationInfo?
     
     private struct PendingBinaryOperationInfo {

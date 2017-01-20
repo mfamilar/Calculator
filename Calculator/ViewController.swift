@@ -71,15 +71,25 @@ class ViewController: UIViewController {
     }
     
     
-     @IBAction private func backspace() {
-        if var textCurrentlyInDisplay = display.text {
-            if textCurrentlyInDisplay.characters.count > 1 {
-                textCurrentlyInDisplay = textCurrentlyInDisplay.substring(to: textCurrentlyInDisplay.index(before: textCurrentlyInDisplay.endIndex))
-            } else {
-                textCurrentlyInDisplay = "0"
+    @IBAction private func undo() {
+        if userIsInTheMiddleOfTypingANumber {
+            func backspace() {
+                if var textCurrentlyInDisplay = display.text {
+                    if textCurrentlyInDisplay.characters.count > 1 {
+                        textCurrentlyInDisplay = textCurrentlyInDisplay.substring(to: textCurrentlyInDisplay.index(before: textCurrentlyInDisplay.endIndex))
+                    } else {
+                        textCurrentlyInDisplay = "0"
+                    }
+                    display.text = textCurrentlyInDisplay
+                    brain.setOperand(operand: displayValue)
+                }
             }
-            display.text = textCurrentlyInDisplay
-            brain.setOperand(operand: displayValue)
+            backspace()
+        } else {
+            tmpProgram = brain.program
+            brain.undo(oldList: tmpProgram!)
+            displayValue = brain.result
+            history.text! = brain.history
         }
     }
     

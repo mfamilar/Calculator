@@ -322,9 +322,9 @@
                                                         <rect key="frame" x="232.5" y="0.0" width="110.5" height="75.5"/>
                                                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                                        <state key="normal" title="back"/>
+                                                        <state key="normal" title="undo"/>
                                                         <connections>
-                                                            <action selector="backspace" destination="BYZ-38-t0r" eventType="touchUpInside" id="yjU-pV-t47"/>
+                                                            <action selector="undo" destination="BYZ-38-t0r" eventType="touchUpInside" id="dmX-HN-r3A"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
