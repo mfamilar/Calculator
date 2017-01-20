@@ -78,12 +78,14 @@ class CalculatorBrain {
     }
     
     func refreshPropertyList(oldList: PropertyList, variable: String)  {
-        if let arrayOfOps = oldList as? [AnyObject] {
-            for op in arrayOfOps {
-                if let operand = op as? Double { setOperand(operand: operand) }
-                else if let operand = op as? String {
-                    if operand == variable { setOperand(variableName: variable) }
-                    else { performOperation(symbol: operand) }
+        if isPartialResult == false {
+            if let arrayOfOps = oldList as? [AnyObject] {
+                for op in arrayOfOps {
+                    if let operand = op as? Double { setOperand(operand: operand) }
+                    else if let operand = op as? String {
+                        if operand == variable { setOperand(variableName: variable) }
+                        else { performOperation(symbol: operand) }
+                    }
                 }
             }
         }

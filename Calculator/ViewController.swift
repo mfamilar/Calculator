@@ -41,6 +41,7 @@ class ViewController: UIViewController {
                     brain.variableValues[variable] = displayValue
                     brain.refreshPropertyList(oldList: tmpProgram!, variable: variable)
                     displayValue = brain.result
+                    userIsInTheMiddleOfTypingANumber = false
                 }
                 
             }
@@ -50,8 +51,7 @@ class ViewController: UIViewController {
     @IBAction private func getValue(sender: UIButton) {
         if let variable = sender.currentTitle {
             brain.setOperand(variableName: variable)
-            if let nb = brain.variableValues[variable] { displayValue = nb }
-            else { displayValue = 0.0 }
+            displayValue = brain.result
         }
     }
    
