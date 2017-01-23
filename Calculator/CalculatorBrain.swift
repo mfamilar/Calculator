@@ -45,7 +45,7 @@ class CalculatorBrain {
         "e"     : Operation.Constant(M_E),
         "±"     : Operation.UnaryOperation({ -$0 }),
         "√"     : Operation.UnaryOperation(sqrt),
-        "sin"   : Operation.UnaryOperation(sin),
+        "sin"   : Operation.UnaryOperation(sinh),
         "tan"   : Operation.UnaryOperation(tan),
         "×"     : Operation.BinaryOperation({ $0 * $1 }),
         "+"     : Operation.BinaryOperation({ $0 + $1 }),
@@ -148,7 +148,7 @@ class CalculatorBrain {
         variableValues.removeValue(forKey: "M")
     }
     
-    func random0to1() -> Double {
+    private func random0to1() -> Double {
         let intMax = Double(UInt32.max)
         return Double(arc4random()) / intMax
     }
@@ -216,7 +216,8 @@ class CalculatorBrain {
                 accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol, strAccumulator: strAccumulator)
-                accumulator = foo(accumulator)
+                if symbol == "√" { accumulator = foo(accumulator) }
+                else { accumulator = foo((M_PI * accumulator) / 180) }
             case .BinaryOperation(let function):
                 binaryDescription(symbol: symbol, strAccumulator: strAccumulator)
                 executePendingBinaryOperation()
