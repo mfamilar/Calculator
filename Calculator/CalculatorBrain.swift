@@ -216,7 +216,7 @@ class CalculatorBrain {
                 accumulator = value
             case .UnaryOperation(let foo):
                 unaryDescscription(symbol: symbol, strAccumulator: strAccumulator)
-                if symbol == "√" { accumulator = foo(accumulator) }
+                if symbol == "√" || symbol == "±" { accumulator = foo(accumulator) }
                 else { accumulator = foo((M_PI * accumulator) / 180) }
             case .BinaryOperation(let function):
                 binaryDescription(symbol: symbol, strAccumulator: strAccumulator)
